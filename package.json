@@ -1,0 +1,24 @@
+{
+  "name": "lunchgowhere",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lunch place voting for a small group. Decide in a minute, not a chat thread.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "cf:dev": "wrangler dev",
+    "cf:deploy": "wrangler deploy",
+    "cf:tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "workerd@1.20260825.1": true
+  }
+}

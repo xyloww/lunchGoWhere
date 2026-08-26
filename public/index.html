@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lunch Go Where</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='13' font-size='13'>🍜</text></svg>"
+    />
+  </head>
+  <body>
+    <main class="app">
+      <header class="head">
+        <h1>Lunch Go Where</h1>
+        <p class="sub">Suggest a place, vote once, go eat.</p>
+      </header>
+
+      <!-- Identity: a name-selection list, not a login. -->
+      <section class="card" id="whoCard" aria-labelledby="whoTitle">
+        <h2 id="whoTitle">Who are you?</h2>
+        <div class="people" id="people"></div>
+        <form class="row" id="joinForm" autocomplete="off">
+          <input id="joinName" type="text" placeholder="Add your name" aria-label="Your name" />
+          <button type="submit" class="btn">Join</button>
+        </form>
+        <p class="hint" id="whoHint"></p>
+      </section>
+
+      <section class="card standing" id="standingCard" aria-live="polite" hidden>
+        <p class="standing-label" id="standingLabel"></p>
+        <p class="standing-name" id="standingName"></p>
+        <p class="hint" id="standingNote"></p>
+      </section>
+
+      <section aria-labelledby="placesTitle">
+        <div class="section-head">
+          <h2 id="placesTitle">Places</h2>
+          <button type="button" class="btn ghost small" id="resetBtn" hidden>New round</button>
+        </div>
+        <ul class="places" id="places"></ul>
+        <p class="empty" id="placesEmpty" hidden>No suggestions yet. Add the first one below.</p>
+      </section>
+
+      <section class="card" aria-labelledby="addTitle">
+        <h2 id="addTitle">Add a place</h2>
+        <form id="addForm" autocomplete="off">
+          <div class="row">
+            <input id="placeName" type="text" placeholder="Place name" aria-label="Place name" />
+            <button type="submit" class="btn primary">Add</button>
+          </div>
+          <input id="placeNote" type="text" placeholder="Note (optional) — e.g. 5 min walk" aria-label="Note" />
+        </form>
+      </section>
+
+      <p class="msg" id="msg" role="status" aria-live="polite"></p>
+    </main>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

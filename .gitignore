@@ -1,0 +1,6 @@
+node_modules/
+# The group's live suggestions and votes — local runtime state, not source.
+data/
+*.tmp
+# Wrangler's local state and the local Durable Object storage it simulates.
+.wrangler/

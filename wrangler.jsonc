@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lunchgowhere",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-09-01",
+
+  // public/ is served straight off Cloudflare's edge. Only paths with no matching
+  // asset — i.e. /api/* — ever reach the Worker, so there is no static-file code
+  // (and no path-traversal check) to get wrong here.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  // One Durable Object holds the whole board. SQLite-backed, which is what the
+  // Workers free plan supports.
+  "durable_objects": {
+    "bindings": [{ "name": "GROUP", "class_name": "Group" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Group"] }],
+
+  // Change this to run a second, separate board off the same deployment.
+  "vars": { "GROUP_NAME": "default" },
+
+  "observability": { "enabled": true }
+}
