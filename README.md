@@ -18,7 +18,7 @@ their phones on the office Wi-Fi, share your machine's LAN address (e.g.
 `http://192.168.1.42:3000`). Set `PORT` to use a different port.
 
 ```sh
-npm test           # 17 tests over the API rules, on both storage backends
+npm test           # 23 tests over the API rules, on both storage backends
 ```
 
 ## Deploy it (Cloudflare)

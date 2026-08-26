@@ -23,17 +23,39 @@ export function emptyState() {
  * Coerce whatever a store handed back into a usable state. Anything malformed is
  * dropped rather than thrown on, so a hand-edited file or a half-migrated record
  * degrades instead of breaking startup.
+ *
+ * What comes out holds only what the rest of the app can rely on: every place has the
+ * five fields `tally` and `view` read, and every vote has a member at one end and a
+ * place that exists at the other. Sanitising in that order matters — a vote is only
+ * kept once both of its ends have survived.
  */
 export function normalize(raw) {
   const state = emptyState();
   if (!raw || typeof raw !== 'object') return state;
   if (Array.isArray(raw.people)) state.people = raw.people.filter((p) => typeof p === 'string');
   if (Array.isArray(raw.places)) {
-    state.places = raw.places.filter((p) => p && typeof p.id === 'string');
+    state.places = raw.places
+      .filter((p) => p && typeof p.id === 'string' && clean(p.name))
+      .map((place, index) => ({
+        id: place.id,
+        name: clean(place.name),
+        note: clean(place.note),
+        addedBy: clean(place.addedBy),
+        // `tally` breaks ties with `a.createdAt - b.createdAt`. A missing counter makes
+        // that NaN, and the ordering the field exists for silently stops working, so a
+        // record without a usable one is given a position instead.
+        createdAt: Number.isFinite(place.createdAt) ? place.createdAt : index + 1,
+      }));
   }
   if (raw.votes && typeof raw.votes === 'object') {
+    const ids = new Set(state.places.map((p) => p.id));
     for (const [person, placeId] of Object.entries(raw.votes)) {
-      if (typeof placeId === 'string') state.votes[person] = placeId;
+      if (typeof placeId !== 'string' || !ids.has(placeId)) continue;
+      // Keyed by the roster spelling, so one member cannot hold two votes under two
+      // spellings of their name — and a vote from nobody on the list is dropped rather
+      // than counted, which is what let a place show more votes than there are people.
+      const member = state.people.find((p) => sameName(p, person));
+      if (member) state.votes[member] = placeId;
     }
   }
   return state;
