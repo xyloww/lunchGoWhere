@@ -211,10 +211,17 @@ function render() {
   $('joinName').maxLength = state.limits.person;
   $('placeName').maxLength = state.limits.place;
   $('placeNote').maxLength = state.limits.note;
-  $('placeName').disabled = !me;
-  $('placeNote').disabled = !me;
-  $('addForm').querySelector('button').disabled = !me;
-  $('placeName').placeholder = me ? 'Place name' : 'Pick your name first';
+  // The server enforces the cap too; this only stops offering what it would refuse.
+  const full = state.places.length >= state.maxPlaces;
+  const canAdd = Boolean(me) && !full;
+  $('placeName').disabled = !canAdd;
+  $('placeNote').disabled = !canAdd;
+  $('addForm').querySelector('button').disabled = !canAdd;
+  $('placeName').placeholder = !me
+    ? 'Pick your name first'
+    : full
+      ? `The list is full (${state.maxPlaces} places)`
+      : 'Place name';
 }
 
 $('joinForm').onsubmit = (event) => {

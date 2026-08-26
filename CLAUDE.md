@@ -95,8 +95,11 @@ gets onto the roster, so it takes `name` and returns `you` alongside the usual v
   stable tiebreaker in `tally`, so equal-vote places do not reshuffle between refreshes.
 - **One vote per person, changeable; voting for your current pick withdraws it.** Deleting a place
   also deletes votes pointing at it. `standing.tied` is the signal the group still has to decide.
-- **The limits live only in `src/logic.js`** (`MAX_PEOPLE`, `MAX_PERSON_NAME`, `MAX_PLACE_NAME`,
-  `MAX_NOTE`) and reach the browser on the view as `maxPeople` and `limits`. `render()` applies them as
+- **The limits live only in `src/logic.js`** (`MAX_PEOPLE`, `MAX_PLACES`, `MAX_PERSON_NAME`,
+  `MAX_PLACE_NAME`, `MAX_NOTE`) and reach the browser on the view as `maxPeople`, `maxPlaces` and
+  `limits`. `MAX_PLACES` is the one that keeps the board writable at all: the whole state is a
+  single stored value, and a Durable Object value cannot exceed 128 KiB, so an unbounded list would
+  eventually fail every write. `render()` applies the rest as
   `maxLength` on the inputs, so `public/index.html` carries no `maxlength` attributes — change the
   constant and both sides follow. Do not reintroduce a hard-coded limit in the markup.
 - `read()` returns the live cached object — treat it as read-only and mutate only inside `update`.
