@@ -1,6 +1,11 @@
 // Pure rules for Lunch Go Where. No I/O here so it stays easy to reason about and test.
 
 export const MAX_PEOPLE = 10;
+// The whole board lives in one stored value — a single JSON file locally, a single
+// Durable Object key on Cloudflare, where a value cannot exceed 128 KiB. An unbounded
+// list would eventually stop fitting and every write after that would fail, so the
+// list is capped well below that: fifty is far more than ten people will shortlist.
+export const MAX_PLACES = 50;
 export const MAX_PERSON_NAME = 30;
 export const MAX_PLACE_NAME = 60;
 export const MAX_NOTE = 120;
@@ -62,6 +67,11 @@ export function validatePlace({ name, note }, places, { ignoreId } = {}) {
   }
   const clash = places.some((p) => p.id !== ignoreId && sameName(p.name, cleanName));
   if (clash) return { error: `${cleanName} has already been suggested.` };
+  // Only a new suggestion can push the list over the cap — an edit replaces a place
+  // that is already counted, and `ignoreId` is what tells the two apart.
+  if (!ignoreId && places.length >= MAX_PLACES) {
+    return { error: `The list is full (${MAX_PLACES} places). Remove one to add another.` };
+  }
   return { value: { name: cleanName, note: cleanNote } };
 }
 
@@ -112,6 +122,7 @@ export function view(state) {
     votes: state.votes,
     standing: standing(ranked),
     maxPeople: MAX_PEOPLE,
+    maxPlaces: MAX_PLACES,
     // Published so the inputs enforce the same limits the server does, from one source.
     limits: { person: MAX_PERSON_NAME, place: MAX_PLACE_NAME, note: MAX_NOTE },
   };
