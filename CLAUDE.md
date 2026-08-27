@@ -112,7 +112,12 @@ gets onto the roster, so it takes `name` and returns `you` alongside the usual v
   `act(fn)`, which adopts the returned view as the new state and routes thrown messages to the status
   line — so handlers return the API response rather than touching the DOM.
 - A 2 s `setInterval` poll keeps the group in sync (no sockets). Polling holds off while `editingId`
-  is set, otherwise a refresh would wipe the open edit inputs.
+  is set, otherwise a refresh would wipe the open edit inputs, and while an action is in flight.
+- **Two writers, one `state`: responses are ticketed.** Every request takes a number from `ticket`
+  when it is sent, and a snapshot is only adopted when nothing newer has been adopted already
+  (`newest`). Without it a poll issued before a vote can resolve after it and put the pre-vote board
+  back on screen until the next tick. A mutation reply always wins — it is the freshest the server
+  gets at the moment it lands — so it takes the next number on arrival rather than on dispatch.
 - "Who you are" lives in `localStorage` under `lgw.me`. If that name is missing from the roster on
   render, it is dropped — a reset data file logs you out rather than leaving a phantom identity.
 - `el()` sets `textContent`, never `innerHTML`; user-supplied names must stay un-parsed.
