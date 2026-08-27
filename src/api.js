@@ -50,7 +50,9 @@ async function addPlace(store, body) {
       name: value.name,
       note: value.note,
       addedBy: user,
-      createdAt: state.places.length ? Math.max(...state.places.map((p) => p.createdAt)) + 1 : 1,
+      // Folded rather than spread: `Math.max(...list)` overflows the call stack on a
+      // long list, and the counter only has to come out above every id already in use.
+      createdAt: state.places.reduce((max, p) => Math.max(max, p.createdAt), 0) + 1,
     });
     return view(state);
   });

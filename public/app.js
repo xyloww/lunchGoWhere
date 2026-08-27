@@ -9,6 +9,14 @@ let me = localStorage.getItem(ME_KEY) ?? '';
 let editingId = null; // While editing, polling holds off so the inputs are not wiped.
 let msgTimer = null;
 
+// `state` has two writers — your own actions and the 2 s poll — and the network does not
+// deliver them in the order they were sent. A poll issued before a vote can land after it
+// and put the pre-vote board back. So every response is ticketed when it is *sent*, and a
+// snapshot is only adopted if nothing newer has been adopted already.
+let ticket = 0;
+let newest = 0;
+let mutating = 0; // actions in flight
+
 async function api(path, { method = 'GET', body } = {}) {
   const res = await fetch(path, {
     method,
@@ -28,12 +36,18 @@ function say(text, ms = 4000) {
 
 /** Every action funnels through here: run it, adopt the returned state, surface errors. */
 async function act(fn) {
+  mutating += 1;
   try {
     state = await fn();
+    // A mutation reply is the freshest the server gets the moment it lands, so it wins
+    // outright — and it retires every poll still in the air behind it.
+    newest = ++ticket;
     say('');
     render();
   } catch (err) {
     say(err.message);
+  } finally {
+    mutating -= 1;
   }
 }
 
@@ -211,10 +225,17 @@ function render() {
   $('joinName').maxLength = state.limits.person;
   $('placeName').maxLength = state.limits.place;
   $('placeNote').maxLength = state.limits.note;
-  $('placeName').disabled = !me;
-  $('placeNote').disabled = !me;
-  $('addForm').querySelector('button').disabled = !me;
-  $('placeName').placeholder = me ? 'Place name' : 'Pick your name first';
+  // The server enforces the cap too; this only stops offering what it would refuse.
+  const full = state.places.length >= state.maxPlaces;
+  const canAdd = Boolean(me) && !full;
+  $('placeName').disabled = !canAdd;
+  $('placeNote').disabled = !canAdd;
+  $('addForm').querySelector('button').disabled = !canAdd;
+  $('placeName').placeholder = !me
+    ? 'Pick your name first'
+    : full
+      ? `The list is full (${state.maxPlaces} places)`
+      : 'Place name';
 }
 
 $('joinForm').onsubmit = (event) => {
@@ -249,9 +270,15 @@ $('resetBtn').onclick = () => {
 
 // Ten people on their phones: polling is plenty, and far less to go wrong than sockets.
 async function poll() {
-  if (editingId) return;
+  if (editingId || mutating) return; // mid-edit, or an action is already ahead of us
+  const mine = ++ticket;
   try {
-    state = await api('/api/state');
+    const next = await api('/api/state');
+    // Older than what is on screen: a mutation landed while this was in flight, or a
+    // later poll beat it home. Either way this snapshot is history — drop it.
+    if (mine < newest || mutating) return;
+    newest = mine;
+    state = next;
     render();
   } catch {
     say('Lost the connection — retrying.', POLL_MS);

@@ -18,7 +18,7 @@ their phones on the office Wi-Fi, share your machine's LAN address (e.g.
 `http://192.168.1.42:3000`). Set `PORT` to use a different port.
 
 ```sh
-npm test           # 23 tests over the API rules, on both storage backends
+npm test           # 27 tests over the API rules, on both storage backends
 ```
 
 ## Deploy it (Cloudflare)
@@ -46,7 +46,7 @@ front of it — that is the piece this app deliberately does not try to be.
 1. **Pick your name** from the list, or add it if it is not there yet (max 10 people).
    There is no login — the name is just how the group tells votes apart, remembered in
    your browser so you only pick it once.
-2. **Add a place.** Name, plus an optional note like "5 min walk".
+2. **Add a place.** Name, plus an optional note like "5 min walk" (up to 50 places).
 3. **Vote.** One vote each. Voting for something else moves your vote; voting for your
    current pick again takes it back. One vote per person is what forces a decision —
    with unlimited votes everything ties.
