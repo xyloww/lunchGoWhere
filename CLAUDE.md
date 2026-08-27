@@ -135,7 +135,10 @@ model and makes a write atomic without a transaction. One deployment is one boar
 `wrangler.jsonc` picks which object id it uses.
 
 Both run what they load through `normalize()` in `logic.js`, which drops anything malformed rather
-than throwing, so a hand-edited file or a stale record degrades instead of breaking startup.
+than throwing, so a hand-edited file or a stale record degrades instead of breaking startup. What it
+returns is sanitised, not merely non-throwing: each place carries the five fields `tally` and `view`
+read (with `createdAt` defaulted to its position when the stored one is unusable), and a vote is kept
+only when a member is at one end and a place that still exists is at the other.
 
 ### Tests
 
